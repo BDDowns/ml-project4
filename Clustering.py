@@ -13,7 +13,7 @@ dbscan performs a clustering of data using the DBSCAN algorithm
 @param
 @return 
 '''
-def dbscan():
+def dbscan(self):
     pass
 
 
@@ -22,7 +22,7 @@ kmeans performs a clustering of data using the kmeans algorithm
 @param
 @return
 '''
-def kmeans():
+def kmeans(self):
     pass
 
 
@@ -31,7 +31,7 @@ complearning performs a clustering of input data using competative learning neur
 @param
 @return
 '''
-def complearning():
+def complearning(self):
     pass
 
 
@@ -40,7 +40,7 @@ aco peforms a clustering of input data using the ant colony optomization algorit
 @param
 @return
 '''
-def aco():
+def aco(self):
     pass
 
 
@@ -49,5 +49,14 @@ pso performs a clustering of input date using particle swarm optimization
 @param
 @return
 '''
-def pso():
+def pso(self):
+    pass
+
+
+'''
+printplots outputs an <n dimensional> projection of clustered data
+@param
+@return
+'''
+def printplots(self):
     pass
