@@ -16,7 +16,7 @@ http://archive.ics.uci.edu/ml/datasets/
 
 The following datasets are processed and clustered:
 * http://archive.ics.uci.edu/ml/datasets/Sales_Transactions_Dataset_Weekly
-* https://kdd.ics.uci.edu/databases/covertype/covertype.html
+* http://archive.ics.uci.edu/ml/datasets/Anuran+Calls+%28MFCCs%29
 * http://archive.ics.uci.edu/ml/datasets/Libras+Movement
 * http://archive.ics.uci.edu/ml/datasets/User+Knowledge+Modeling
 * http://archive.ics.uci.edu/ml/datasets/seeds 
