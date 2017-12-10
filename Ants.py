@@ -5,7 +5,7 @@ from scipy.spatial import distance as dst
 from time import time
 import Printer as pp
 class Ant:
-    def __init__(self, farm, x_init=0, y_init=0, sense_range=10, ):
+    def __init__(self, farm, x_init=0, y_init=0, sense_range=14, ):
         self.farm = farm
         self.pos = (x_init, y_init)
         self.sense_range= sense_range
@@ -165,11 +165,11 @@ class Ant:
                 score = dst.cosine(compared_point.data, mean)
             #update if new least fit found and meets dissimilarity tolerance
             if (self.carrying is None):
-                if(score>least_fitness and score>.53 ):
+                if(score>least_fitness and score>.30 ):
                     least_fitness = score
                     target = datum[i][0]
             elif( self.carrying is not None ):
-                if(score<.53 and score<best_fitness):
+                if(score<.20 and score<best_fitness):
                     best_fitness = score
                     target = mean_pos
 
