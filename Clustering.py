@@ -34,7 +34,7 @@ def dbscan(self, data, eps, minPts):
             cluster += 1
             row[-1] = "Cluster " + str(cluster)
             seeds = neighbors
-            for i in range(len(seeds)):
+            for i in seeds:
                 if data.loc[i, 'cluster'] == 'Noise':
                     data.loc[i, 'cluster'] = 'Border ' + str(cluster)
                 if data.loc[i, 'cluster'] == []:
