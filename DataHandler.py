@@ -29,10 +29,3 @@ class DataPoints:
         self.data = attr
         self.loc = [None, None]
         self.clusterlabel = None
-        self.carrier = None
-    def set_down(self):
-        self.loc = self.carrier.pos
-        self.carrier = None
-    def pick_up(self, ant):
-        self.carrier = ant
-        self.loc = [None, None]
