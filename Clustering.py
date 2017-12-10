@@ -13,10 +13,10 @@ class Clustering():
 
 '''
 dbscan performs a clustering of data using the DBSCAN algorithm
-@param data: a pandas dataframe object
-       eps: float; the minimum distance between points in a cluster 
-       minPts: integer; the minimum number of points to constitute a cluster
-@return pandas dataframe object with cluster labels added to the last column
+@param data: (pandas dataframe object) with class labels in last column
+       eps: (float) the minimum distance between points in a cluster 
+       minPts: (integer) the minimum number of points to constitute a cluster
+@return data: (pandas dataframe object) with cluster labels added to the last column
 '''
 def dbscan(self, data, eps, minPts):
     # Track number of clusters
@@ -62,11 +62,18 @@ def euclidian_d(self, a, b):
 
 '''
 kmeans performs a clustering of data using the kmeans algorithm
-@param
-@return
+@param data: (pandas dataframe object) with class labels in last column
+       k: (int) number of clusters/centroids
+       iters: (int) number of cluster iterations
+@return data: (pandas dataframe object) cluster labeled 
 '''
-def kmeans(self):
-    pass
+def kmeans(self, data, k, iters):
+    # create a cluster column
+    data['cluster'] = np.empty((len(data), 0)).tolist()
+    count = 0
+    while count < iters:
+        pass
+    
 
 
 '''
