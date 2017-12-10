@@ -18,6 +18,10 @@ def handleCSV(self, file):
 def data_to_points(self, file):
     points = []
     df = pd.read_csv(file).as_matrix()
+    for i in range(0, len(df)):
+        point = DataPoints(df[i])
+        points.append(point)
+    return points
 
 
 class DataPoints:
@@ -25,10 +29,3 @@ class DataPoints:
         self.data = attr
         self.loc = [None, None]
         self.clusterlabel = None
-        self.carrier = None
-    def set_down(self):
-        self.loc = self.carrier.pos
-        self.carrier = None
-    def pick_up(self, ant):
-        self.carrier = ant
-        self.loc = [None, None]
