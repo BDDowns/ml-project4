@@ -4,6 +4,7 @@ from bidict import bidict #bi-directional dictionary mapping
 from scipy.spatial import distance as dst
 from time import time
 import Printer as pp
+from bidict._common import ValueDuplicationError as vdb
 class Ant:
     def __init__(self, farm, x_init=0, y_init=0, sense_range=14, ):
         self.farm = farm
@@ -30,8 +31,8 @@ class Ant:
                 #if no position in the immediate vicinity are viable, move to new random location
                 if(moved is False):
                     while(moved is False):
-                        x = random.randint(-15, 15) + self.pos[0]
-                        y = random.randint(-15, 15) + self.pos[1]
+                        x = random.randint(-25, 25) + self.pos[0]
+                        y = random.randint(-25, 25) + self.pos[1]
                         if (self.check_valid_pos([x, y], dropoff=dropoff) is not False):
                             self.pos = (x, y)
                             moved = True
@@ -50,9 +51,12 @@ class Ant:
         self.farm.occupied_space.remove(self.pos)
 
     def setdown(self):
-        self.farm.data_map[self.carrying] = self.pos
-        self.farm.occupied_space.append(self.pos)
-        self.carrying = None
+        try:
+            self.farm.data_map[self.carrying] = self.pos
+            self.farm.occupied_space.append(self.pos)
+            self.carrying = None
+        except vdb:
+            print("duplicate datapoint found\n\n")
 
     def check_valid_pos(self, pos, dropoff=False):
         valid = False
@@ -92,15 +96,19 @@ class Ant:
     def steps_per_iteration(self):
         complete = False
         self.scan()
+        target = None
         #If ant is carrying datapoint
         if(self.carrying is not None):
             while(len(self.data_loc_sensed)<3):
                 self.move()
                 self.scan()
             target = self.evaluate_fit()
-            if (target is not None):
+            if(target is not None):
                 self.move(target, dropoff=True)
                 self.setdown()
+            else:
+                self.move()
+                self.move()
         #if ant is not carrying datapoint
         else:
             #If an ant is in a location with few datapoints, pickup datapoint to move it
@@ -149,7 +157,7 @@ class Ant:
                 compared_point = datum[i][1]
             else: compared_point = self.carrying
             # compute cosine similiarity between compared point and next 2 points closest to ant
-            if (i < len(datum)-3):
+            if (i < len(datum)-4):
                 data1 = datum[i+1][1].data
                 data2 = datum[i+2][1].data
                 mean = (1/2)*(data1 + data2)
@@ -165,11 +173,11 @@ class Ant:
                 score = dst.cosine(compared_point.data, mean)
             #update if new least fit found and meets dissimilarity tolerance
             if (self.carrying is None):
-                if(score>least_fitness and score>.30 ):
+                if(score>least_fitness and score>.36 ):
                     least_fitness = score
                     target = datum[i][0]
-            elif( self.carrying is not None ):
-                if(score<.20 and score<best_fitness):
+            elif(self.carrying is not None):
+                if(score<.36 and score<best_fitness):
                     best_fitness = score
                     target = mean_pos
 
@@ -181,7 +189,9 @@ class Ant:
 
 
 class AntFarm:
-    def __init__(self, num_ants, datapoints, sense_radius=10, dim=90):
+    def __init__(self, num_ants, datapoints, sense_radius=15, dim=150, filename='none', max_iterations=200):
+        self.max_iterations = max_iterations
+        self.filename = filename
         dimensions = [dim, dim]
         self.dimensions = dimensions
         self.occupied_space = []
@@ -210,17 +220,17 @@ class AntFarm:
                     self.data_map[point] = point.loc
                     placed = True
 
-    def run(self, max_iterations=250):
+    def run(self):
         i=0
-        self.print_p("initial")
-        while(i<max_iterations):
+        self.print_p("{} initial".format(self.filename))
+        while(i<self.max_iterations):
             for each_ant in self.colony:
                 each_ant.steps_per_iteration()
             if(i%10 == 0):
                 print("Iteration {} complete\nTime:{}\n".format(i, time()))
             i+=1
         self.end_simulation()
-        pp.Printer.print_clusters(self.occupied_space, "clustered")
+        pp.Printer.print_clusters(self.occupied_space, "{} clustered".format(self.filename))
 
     def print_p(self, title):
         points = []

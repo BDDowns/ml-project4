@@ -91,9 +91,10 @@ class Clustering:
     @return
     '''
     @staticmethod
-    def aco():
-        datapoints = dh.DataHandler.data_to_points('seeds.csv')
-        aco = Ants.AntFarm(90, datapoints)
+    def aco(file_name, num_ants=90, iterations=200):
+        datapoints = dh.DataHandler.data_to_points(file_name)
+        file_name = file_name.strip(".csv")
+        aco = Ants.AntFarm(num_ants, datapoints, filename=file_name, max_iterations=iterations)
         aco.run()
 
 
