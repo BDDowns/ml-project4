@@ -24,7 +24,8 @@ class Clustering:
            minPts: (integer) the minimum number of points to constitute a cluster
     @return data: (pandas dataframe object) with cluster labels added to the last column
     '''
-    def dbscan(self, data, eps, minPts):
+    def dbscan(self, data, eps, minPts, outname):
+        data = pd.read_csv(data, header=None)
         # Track number of clusters
         cluster = 0
         # append cluster labels list and initialize to unlabeled
@@ -32,10 +33,10 @@ class Clustering:
         # loop over datapoints
         for index, row in data.iterrows():
             # only continue if the label is undefined
-            if row[-1] == []:
+            if data.loc[index, 'cluster'] == []:
                 neighbors = self.range_check(data, row, eps)
                 if len(neighbors) < minPts:
-                    row[-1] = "Noise"
+                    data.loc[index, 'cluster'] = 'Noise'
                     continue
                 cluster += 1
                 row[-1] = "Cluster " + str(cluster)
@@ -43,13 +44,15 @@ class Clustering:
                 for i in seeds:
                     if data.loc[i, 'cluster'] == 'Noise':
                         data.loc[i, 'cluster'] = 'Border ' + str(cluster)
+                        print('wrote border {}'.format(cluster))
                     if data.loc[i, 'cluster'] == []:
                         data.loc[i, 'cluster'] = 'Cluster ' + str(cluster)
                         neighbors = self.range_check(data, data.loc[i], eps)
                         if len(neighbors) >= minPts:
                             for index in neighbors:
-                                seeds.append(index)
-        return data
+                                if index not in seeds:
+                                    seeds.append(index)
+        data.to_csv("./results/{}".format(outname))
 
     def range_check(self, data, Q, eps):
         neighbors = []
@@ -62,7 +65,7 @@ class Clustering:
         distance = 0
         # hand wave magic teim
         # this assumes that a class label was the last column, and we added the empty cluster column...
-        for i in range(len(a) - 2):
+        for i in range(len(a) - 1):
             distance += (a[i] - b[i])**2
         return distance
 
@@ -75,7 +78,8 @@ Andrew Ng pseudocode from http://stanford.edu/~cpiech/cs221/handouts/kmeans.html
        iters: (int) number of cluster iterations
 @return data: (pandas dataframe object) cluster labeled 
 '''
-def kmeans(self, data, k, max_iters):
+def kmeans(self, data, k, max_iters, outname):
+    data = pd.read_csv(data, header=None)
     # create a cluster column
     data['cluster'] = np.empty((len(data), 0)).tolist()
     count = 0
@@ -91,7 +95,7 @@ def kmeans(self, data, k, max_iters):
         data = self.assign_labels(data, centroids)
         # compute new centroids
         centroids = self.update_centroids(data, centroids)
-
+    data.to_csv('./data/{}'.format(outname))
 
 '''
 stop clustering if max iterations exceeded, or centroids no longer change
@@ -122,10 +126,10 @@ def update_centroids(self, data, centroids):
             # sum attributes of like clusters and divide by number of matches
             if row['cluster'] == i:
                 number_in_cluster += 1
-                for j in range(len(row) - 2):
+                for j in range(len(row) - 1):
                     centroids[j][i] += row[j]
         # compute geometric mean
-        for j in range(len(centroids.loc[0]) - 2):
+        for j in range(len(centroids.loc[0]) - 1):
             centroids.loc[j] = centroids.loc[j] / number_in_cluster
     return centroids
 
