@@ -31,8 +31,8 @@ class Ant:
                 #if no position in the immediate vicinity are viable, move to new random location
                 if(moved is False):
                     while(moved is False):
-                        x = random.randint(-25, 25) + self.pos[0]
-                        y = random.randint(-25, 25) + self.pos[1]
+                        x = random.randint(-20, 20) + self.pos[0]
+                        y = random.randint(-20, 20) + self.pos[1]
                         if (self.check_valid_pos([x, y], dropoff=dropoff) is not False):
                             self.pos = (x, y)
                             moved = True
@@ -173,11 +173,11 @@ class Ant:
                 score = dst.cosine(compared_point.data, mean)
             #update if new least fit found and meets dissimilarity tolerance
             if (self.carrying is None):
-                if(score>least_fitness and score>.36 ):
+                if(score>least_fitness and score>.25 ):
                     least_fitness = score
                     target = datum[i][0]
             elif(self.carrying is not None):
-                if(score<.36 and score<best_fitness):
+                if(score<.25 and score<best_fitness):
                     best_fitness = score
                     target = mean_pos
 
@@ -231,6 +231,7 @@ class AntFarm:
             i+=1
         self.end_simulation()
         pp.Printer.print_clusters(self.occupied_space, "{} clustered".format(self.filename))
+        return self.occupied_space
 
     def print_p(self, title):
         points = []

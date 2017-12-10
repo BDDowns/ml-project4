@@ -7,10 +7,12 @@ import pandas as pd
 import numpy as np
 import DataHandler as dh
 import Ants
+from sklearn.metrics import calinski_harabaz_score as scorer
+from sklearn.preprocessing import LabelEncoder
 
 class Clustering:
-
-
+    def clustering(self):
+        self.handler = dh
     '''
     dbscan performs a clustering of data using the DBSCAN algorithm
     @param data: (pandas dataframe object) with class labels in last column
@@ -90,12 +92,36 @@ class Clustering:
     @param
     @return
     '''
-    @staticmethod
-    def aco(file_name, num_ants=90, iterations=200):
+
+    def aco(self, file_name, num_ants, iterations, board_dim):
         datapoints = dh.DataHandler.data_to_points(file_name)
         file_name = file_name.strip(".csv")
-        aco = Ants.AntFarm(num_ants, datapoints, filename=file_name, max_iterations=iterations)
-        aco.run()
+        aco = Ants.AntFarm(num_ants, datapoints, filename=file_name, max_iterations=iterations, dim=board_dim)
+        df = dh.DataHandler.points_to_dataframe(aco.run())
+        df = self.dbscan(df, 4, 9)
+        print("scoring {}\n\n".format(file_name))
+        score = self.evaluate_model(df)
+        with open("{} score.txt".format(file_name), 'w') as results:
+            results.write(str(score))
+            results.close()
+        print("finished".format(file_name))
+
+    def evaluate_model(self, data):
+        le = LabelEncoder()
+        #drop non_clustered points from dataframe
+        data['cluster'] = data['cluster'].where(data['cluster'].str.len() > 0, np.nan)
+        data.dropna(subset=['cluster'], inplace=True)
+        #separate cluster labels from datapoints
+        points = data.as_matrix(columns=data.columns[1:-1])
+        labels = data.as_matrix(columns=data.columns[-1:])
+        le.fit_transform(np.ravel(labels))
+        labels = le.transform(labels)
+        #returns numpy float64 score value
+        return scorer(points, labels)
+
+
+
+
 
 
     '''

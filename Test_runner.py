@@ -1,3 +1,3 @@
-import Clustering as cl
-
-cl.Clustering.aco('data/movement_libras.csv', num_ants=90, iterations=200)
+import Clustering as cluster
+cl = cluster.Clustering()
+cl.aco('data/user_knowledge.csv', num_ants=30, iterations=15)
