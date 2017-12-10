@@ -2,10 +2,12 @@ from DataHandler import DataPoints as pnt
 import random
 from bidict import bidict #bi-directional dictionary mapping
 from scipy.spatial import distance as dst
+from time import time
+import Printer as pp
 class Ant:
     def __init__(self, farm, x_init=0, y_init=0, sense_range=10, ):
         self.farm = farm
-        self.pos = [x_init, y_init]
+        self.pos = (x_init, y_init)
         self.sense_range= sense_range
         self.data_loc_sensed = []
         self.carrying = None
@@ -14,15 +16,14 @@ class Ant:
         moved = False
         #If ant is moving to determined location, check that location is valid and move
         if(vector is not None):
-
             if(self.check_valid_pos(vector, dropoff=dropoff)):
-                self.pos = vector
+                self.pos = (vector[0], vector[1])
             else:
                 #If the position chosen is not valid, check immediately adjacent positions
                 for i in range(-1, 1):
                     for j in range(-1, 1):
                         if(self.check_valid_pos([vector[0] + i, vector[1] + j], dropoff=dropoff) is not False):
-                            self.pos = [vector[0] + i, vector[1] + j]
+                            self.pos = (vector[0] + i, vector[1] + j)
                             i=5
                             j=5
                             moved = True
@@ -32,14 +33,14 @@ class Ant:
                         x = random.randint(-15, 15) + self.pos[0]
                         y = random.randint(-15, 15) + self.pos[1]
                         if (self.check_valid_pos([x, y], dropoff=dropoff) is not False):
-                            self.pos = [x, y]
+                            self.pos = (x, y)
                             moved = True
         else:
             while(moved is False):
                 x = random.randint(-50,50)+ self.pos[0]
                 y = random.randint(-50, 50) + self.pos[1]
                 if (self.check_valid_pos([x, y], dropoff=dropoff) is not False):
-                    self.pos = [x, y]
+                    self.pos = (x, y)
                     moved=True
 
     def pickup(self):
@@ -57,11 +58,11 @@ class Ant:
         valid = False
         x, y = pos[0], pos[1]
         #check if position is within bounds of ant farm
-        if(x>0 and x<self.farm.x_max) and (y>0 and y<self.farm.y_max):
+        if(x>=0 and x<=self.farm.x_max) and (y>=0 and y<=self.farm.y_max):
             valid = True
         else: return False
         #check that no other data points occupy that position
-        if(self.farm.occupied_space.count([x, y])>0 and dropoff is not False):
+        if(self.farm.occupied_space.count((x, y))>0 and dropoff is not False):
             return False
         return valid
 
@@ -70,7 +71,7 @@ class Ant:
         points_in_range = []
         for i in range(-self.sense_range, self.sense_range):
             for j in range(-self.sense_range, self.sense_range):
-                point = [self.pos[0]+i, self.pos[1]+j]
+                point = (self.pos[0]+i, self.pos[1]+j)
                 # Check if collection of points in search radius contain data
                 # To do this, check Antfarm's list of points containing data
                 if (self.farm.occupied_space.count(point)>0):#If scanned position contains data
@@ -104,8 +105,10 @@ class Ant:
         else:
             #If an ant is in a location with few datapoints, pickup datapoint to move it
             if(len(self.data_loc_sensed)<=3 and len(self.data_loc_sensed)>0):
-                self.move(self.data_loc_sensed[0])
-                self.pickup()
+                new_pos = self.data_loc_sensed[0]
+                self.move(new_pos, dropoff=False)
+                if(self.farm.occupied_space.count(new_pos)>0):
+                    self.pickup()
             else:
                 # limit the number of moves per iteration to 5
                 i=0
@@ -138,30 +141,35 @@ class Ant:
         target = None
         for each in self.data_loc_sensed:
             datum.append([each, self.farm.data_map.inv[each]])
-            #sort list of locally sensed data in order of Manhattan distance from ant
-        datum = sorted(datum, key=lambda x: (abs(self.pos[0]-x.data[0]) + abs(self.pos[1]-x.data[1])))
+        x = self.pos[0]
+        y = self.pos[1]
+        datum = sorted(datum, key=lambda z: abs(z[0][0]-x)+abs(z[0][1]-y))
         for i in range(0, len(datum)):
             if(self.carrying is None):
                 compared_point = datum[i][1]
             else: compared_point = self.carrying
             # compute cosine similiarity between compared point and next 2 points closest to ant
             if (i < len(datum)-3):
-                mean = (1/2)*(datum[i+1][1].data + datum[i+2][1].data)
+                data1 = datum[i+1][1].data
+                data2 = datum[i+2][1].data
+                mean = (1/2)*(data1 + data2)
                 mean_pos = [((datum[i + 1][0][0] + datum[i + 2][0][0])//2),
                             ((datum[i + 1][0][1] + datum[i + 2][0][1])//2)]
                 score = dst.cosine(compared_point.data, mean)
             else:
-                mean = (1 / 2) * (datum[i - 1].data + datum[i + 2].data)
+                data1 = datum[i - 1][1].data
+                data2 = datum[i - 2][1].data
+                mean = (1 / 2) * (data1 + data2)
                 mean_pos = [((datum[i - 1][0][0] + datum[i - 2][0][0]) // 2),
                             ((datum[i - 1][0][1] + datum[i - 2][0][1]) // 2)]
                 score = dst.cosine(compared_point.data, mean)
             #update if new least fit found and meets dissimilarity tolerance
             if (self.carrying is None):
-                if(score>least_fitness and score>.33 ):
+                if(score>least_fitness and score>.53 ):
                     least_fitness = score
                     target = datum[i][0]
             elif( self.carrying is not None ):
-                if(score<.33 and score<best_fitness):
+                if(score<.53 and score<best_fitness):
                     best_fitness = score
                     target = mean_pos
 
@@ -173,12 +181,10 @@ class Ant:
 
 
 class AntFarm:
-    def __init__(self, num_ants, datapoints, sense_radius=10, dimensions=None, max_iterations=10000):
-        if(dimensions is None):
-            dimensions = [700, 700]
+    def __init__(self, num_ants, datapoints, sense_radius=10, dim=90):
+        dimensions = [dim, dim]
         self.dimensions = dimensions
-        self.max_iterations = max_iterations
-        self.occupied_space = [None]
+        self.occupied_space = []
         self.data_map = bidict({})#bi-directional dictionary for space and data point
         #                          # { Datapoint : [x, y] }
         self.x_max = dimensions[0]
@@ -188,7 +194,7 @@ class AntFarm:
         for i in range(num_ants):
             x = random.randint(0, self.dimensions[0])
             y = random.randint(0, self.dimensions[1])
-            ant = Ant(self, x, y, sense_radius)
+            ant = Ant(farm=self, x_init=x, y_init=y, sense_range=sense_radius)
             self.colony.append(ant)
         #set position for datapoints in 2-D space
         for point in datapoints:
@@ -196,13 +202,40 @@ class AntFarm:
             while(placed is False):
                 x = random.randint(0, self.dimensions[0])
                 y = random.randint(0, self.dimensions[1])
+                new_pos = (x, y)
                 #check that no other datapoint is already in this position
-                if self.occupied_space.count([x, y]<1):
-                    self.occupied_space.append([x, y])
-                    point.loc = [x, y]
+                if self.occupied_space.count(new_pos)<1:
+                    self.occupied_space.append(new_pos)
+                    point.loc = (x, y)
                     self.data_map[point] = point.loc
                     placed = True
-        self.occupied_space.sort()
+
+    def run(self, max_iterations=250):
+        i=0
+        self.print_p("initial")
+        while(i<max_iterations):
+            for each_ant in self.colony:
+                each_ant.steps_per_iteration()
+            if(i%10 == 0):
+                print("Iteration {} complete\nTime:{}\n".format(i, time()))
+            i+=1
+        self.end_simulation()
+        pp.Printer.print_clusters(self.occupied_space, "clustered")
+
+    def print_p(self, title):
+        points = []
+        for each in self.occupied_space:
+            points.append([each[0], each[1]])
+        pp.Printer.print_clusters(points, title)
+
+    #causes ants carrying data when simulation ends to set down data at the nearest found location
+    def end_simulation(self):
+        for each_ant in self.colony:
+            if(each_ant.carrying is not None):
+                each_ant.move()
+                each_ant.setdown()
+
+
 
 
 
