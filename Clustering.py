@@ -5,6 +5,8 @@ for a total of 25 experiments.
 
 import pandas as pd
 import numpy as np
+import DataHandler as dh
+import Ants
 
 class Clustering():
     def __init__(self):
@@ -91,7 +93,8 @@ aco peforms a clustering of input data using the ant colony optomization algorit
 @return
 '''
 def aco(self):
-    pass
+    datapoints = dh.data_to_points('seeds.csv')
+    aco = Ants.AntFarm(90)
 
 
 '''

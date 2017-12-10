@@ -14,7 +14,7 @@ class DataHandler():
 def handleCSV(self, file):
     df = pd.read_csv(file)
     return df
-
+@classmethod
 def data_to_points(self, file):
     points = []
     df = pd.read_csv(file).as_matrix()

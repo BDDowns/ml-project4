@@ -14,15 +14,15 @@ class Ant:
         moved = False
         #If ant is moving to determined location, check that location is valid and move
         if(vector is not None):
-            new_vector = [self.pos[0] + vector[0], self.pos[1] + vector[1]]
-            if(self.check_valid_pos(new_vector, dropoff=dropoff)):
-                self.pos = new_vector
+
+            if(self.check_valid_pos(vector, dropoff=dropoff)):
+                self.pos = vector
             else:
                 #If the position chosen is not valid, check immediately adjacent positions
                 for i in range(-1, 1):
                     for j in range(-1, 1):
-                        if(self.check_valid_pos([new_vector[0] + i, new_vector[1] + j], dropoff=dropoff) is not False):
-                            self.pos = [new_vector[0] + i, new_vector[1] + j]
+                        if(self.check_valid_pos([vector[0] + i, vector[1] + j], dropoff=dropoff) is not False):
+                            self.pos = [vector[0] + i, vector[1] + j]
                             i=5
                             j=5
                             moved = True
@@ -46,9 +46,11 @@ class Ant:
         datapoint = self.farm.data_map.inv[self.pos]
         self.carrying = datapoint
         del(self.farm.data_map[datapoint])
+        self.farm.occupied_space.remove(self.pos)
 
     def setdown(self):
         self.farm.data_map[self.carrying] = self.pos
+        self.farm.occupied_space.append(self.pos)
         self.carrying = None
 
     def check_valid_pos(self, pos, dropoff=False):
@@ -64,7 +66,7 @@ class Ant:
         return valid
 
     def scan(self):
-        #create collection of x-y coordinates in Ant's seach radius
+        #create collection of x-y coordinates in Ant's search radius
         points_in_range = []
         for i in range(-self.sense_range, self.sense_range):
             for j in range(-self.sense_range, self.sense_range):
@@ -76,8 +78,20 @@ class Ant:
         self.data_loc_sensed = points_in_range
 
 
+
+    """
+    For each time iteration, each ant performs these steps
+        +If carrying something
+            - move until finding a suitable spot to setdown and setdown datapoint
+        +If not carrying anything
+            - move until finding a datapoint that should be moved and pick it up
+                -limit to 5 move iterations if no suitable datapoint to move is found
+    """
+
     def steps_per_iteration(self):
+        complete = False
         self.scan()
+        #If ant is carrying datapoint
         if(self.carrying is not None):
             while(len(self.data_loc_sensed)<3):
                 self.move()
@@ -86,12 +100,29 @@ class Ant:
             if (target is not None):
                 self.move(target, dropoff=True)
                 self.setdown()
-        else
+        #if ant is not carrying datapoint
+        else:
+            #If an ant is in a location with few datapoints, pickup datapoint to move it
+            if(len(self.data_loc_sensed)<=3 and len(self.data_loc_sensed)>0):
+                self.move(self.data_loc_sensed[0])
+                self.pickup()
+            else:
+                # limit the number of moves per iteration to 5
+                i=0
+                while(complete is False and i < 5):
+                    target = self.evaluate_fit()
+                    if (target is not None):
+                        self.move(target, dropoff=False)
+                        self.pickup()
+                        complete = True
+                    else:
+                        self.move()
+                        i+=1
 
 
 
     """
-    evaluate_fit method evaluates the fitness of the datapoints within an ant's percetion range
+    evaluate_fit() method evaluates the fitness of the datapoints within an ant's percetion range
     The fitness is computed by calculating the cosine similarity of a datapoint and two other sensed datapoints
     datapoints are ordered by their distance from the ant's position
 
@@ -142,7 +173,7 @@ class Ant:
 
 
 class AntFarm:
-    def __init__(self, num_ants, datapoints, sense_radius=None, dimensions=None, max_iterations=10000):
+    def __init__(self, num_ants, datapoints, sense_radius=10, dimensions=None, max_iterations=10000):
         if(dimensions is None):
             dimensions = [700, 700]
         self.dimensions = dimensions
