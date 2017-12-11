@@ -51,6 +51,8 @@ class Clustering:
                             for index in neighbors:
                                 if index not in seeds:
                                     seeds.append(index)
+        # print(outname)
+        # print(data)
         data.to_csv("./results/{}.csv".format(outname))
 
     def range_check(self, data, Q, eps):
@@ -94,6 +96,8 @@ class Clustering:
             data = self.assign_labels(data, centroids)
             # compute new centroids
             centroids = self.update_centroids(data, centroids)
+        # print(outname)
+        # print(data)
         data.to_csv('./results/{}.csv'.format(outname))
 
     '''
