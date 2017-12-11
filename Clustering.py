@@ -157,7 +157,7 @@ class Clustering:
         file_name = file_name.strip(".csv")
         aco = Ants.AntFarm(num_ants, datapoints, filename=file_name, max_iterations=iterations, dim=board_dim)
         df = dh.DataHandler.points_to_dataframe(aco.run())
-        df = self.dbscan(df, 4, 9)
+        df = self.dbscan(df, 2, 3)
         print("scoring {}\n\n".format(file_name))
         score = self.evaluate_model(df)
         with open("{} score.txt".format(file_name), 'w') as results:
@@ -173,7 +173,7 @@ class Clustering:
         #separate cluster labels from datapoints
         points = data.as_matrix(columns=data.columns[1:-1])
         labels = data.as_matrix(columns=data.columns[-1:])
-        le.fit_transform(np.ravel(labels))
+        le.fit_transform(labels)
         labels = le.transform(labels)
         #returns numpy float64 score value
         return scorer(points, labels)

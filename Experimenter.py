@@ -15,11 +15,11 @@ def get_data():
 qac_exp executes a quick ant-colony optimization experiment
 '''
 def qac_exp():
-    cl.aco('data/user_knowledge.csv', num_ants=30, iterations=300, board_dim=60)
-    cl.aco('data/Anuran calls.csv', num_ants=90, iterations=300, board_dim=150)
-    cl.aco('data/seeds.csv', num_ants=25, iterations=300, board_dim=50)
-    cl.aco('data/Sales_transactions.csv', num_ants=25, iterations=300, board_dim=50)
-    cl.aco('data/movement_libras.csv', num_ants=20, iterations=300, board_dim=35)
+    #cl.aco('data/user_knowledge.csv', num_ants=90, iterations=300, board_dim=200)
+    #cl.aco('data/Anuran calls.csv', num_ants=75, iterations=250, board_dim=340)
+    cl.aco('data/seeds.csv', num_ants=50, iterations=250, board_dim=200)
+    cl.aco('data/Sales_transactions.csv', num_ants=40, iterations=250, board_dim=200)
+    cl.aco('data/movement_libras.csv', num_ants=40, iterations=250, board_dim=200)
 
 
 
