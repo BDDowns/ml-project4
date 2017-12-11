@@ -12,7 +12,7 @@ class DataHandler():
         pass
 
     def handleCSV(self, file):
-        df = pd.read_csv(file)
+        df = pd.read_csv(file, header=None)
         return df
     @staticmethod
     def data_to_points(file_name):
