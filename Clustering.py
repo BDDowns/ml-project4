@@ -44,7 +44,6 @@ class Clustering:
                 for i in seeds:
                     if data.loc[i, 'cluster'] == 'Noise':
                         data.loc[i, 'cluster'] = 'Border ' + str(cluster)
-                        print('wrote border {}'.format(cluster))
                     if data.loc[i, 'cluster'] == []:
                         data.loc[i, 'cluster'] = 'Cluster ' + str(cluster)
                         neighbors = self.range_check(data, data.loc[i], eps)
@@ -57,11 +56,11 @@ class Clustering:
     def range_check(self, data, Q, eps):
         neighbors = []
         for index, row in data.iterrows():
-            if self.euclidian_d(row, Q) <= eps:
+            if self.euclidean_d(row, Q) <= eps:
                 neighbors.append(index)
         return neighbors
 
-    def euclidian_d(self, a, b):
+    def euclidean_d(self, a, b):
         distance = 0
         # hand wave magic teim
         # this assumes that a class label was the last column, and we added the empty cluster column...
@@ -140,7 +139,7 @@ class Clustering:
             dist = distOld
             # loop over all centroids known
             for i in range(len(centroids)):
-                dist = min(dist, self.euclidian_d(centroids[i], row))
+                dist = min(dist, self.euclidean_d(centroids[i], row))
                 if dist < distOld:
                     data.loc[index, 'cluster'] = i
                 distOld = dist
@@ -177,11 +176,6 @@ class Clustering:
         labels = le.transform(labels)
         #returns numpy float64 score value
         return scorer(points, labels)
-
-
-
-
-
 
     '''
     pso performs a clustering of input date using particle swarm optimization
