@@ -31,8 +31,8 @@ class Ant:
                 #if no position in the immediate vicinity are viable, move to new random location
                 if(moved is False):
                     while(moved is False):
-                        x = random.randint(-20, 20) + self.pos[0]
-                        y = random.randint(-20, 20) + self.pos[1]
+                        x = random.randint(-25, 25) + self.pos[0]
+                        y = random.randint(-25, 25) + self.pos[1]
                         if (self.check_valid_pos([x, y], dropoff=dropoff) is not False):
                             self.pos = (x, y)
                             moved = True
@@ -55,6 +55,10 @@ class Ant:
             self.farm.data_map[self.carrying] = self.pos
             self.farm.occupied_space.append(self.pos)
             self.carrying = None
+            x = random.randint(0, self.farm.dim)
+            y = random.randint(0, self.farm.dim)
+            self.pos = (x, y)
+
         except vdb:
             print("duplicate datapoint found\n\n")
 
@@ -173,11 +177,11 @@ class Ant:
                 score = dst.cosine(compared_point.data, mean)
             #update if new least fit found and meets dissimilarity tolerance
             if (self.carrying is None):
-                if(score>least_fitness and score>.25 ):
+                if(score>least_fitness and abs(score)>.15 ):
                     least_fitness = score
                     target = datum[i][0]
             elif(self.carrying is not None):
-                if(score<.25 and score<best_fitness):
+                if(score<.40 and score<best_fitness):
                     best_fitness = score
                     target = mean_pos
 
@@ -192,6 +196,7 @@ class AntFarm:
     def __init__(self, num_ants, datapoints, sense_radius=15, dim=150, filename='none', max_iterations=200):
         self.max_iterations = max_iterations
         self.filename = filename
+        self.dim = dim
         dimensions = [dim, dim]
         self.dimensions = dimensions
         self.occupied_space = []
