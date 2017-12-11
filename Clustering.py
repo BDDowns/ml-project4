@@ -51,7 +51,7 @@ class Clustering:
                             for index in neighbors:
                                 if index not in seeds:
                                     seeds.append(index)
-        data.to_csv("./results/{}".format(outname))
+        data.to_csv("./results/{}.csv".format(outname))
 
     def range_check(self, data, Q, eps):
         neighbors = []
@@ -94,7 +94,7 @@ class Clustering:
             data = self.assign_labels(data, centroids)
             # compute new centroids
             centroids = self.update_centroids(data, centroids)
-        data.to_csv('./results/{}'.format(outname))
+        data.to_csv('./results/{}.csv'.format(outname))
 
     '''
     stop clustering if max iterations exceeded, or centroids no longer change
