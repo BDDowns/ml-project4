@@ -33,13 +33,17 @@ def hpso_exp():
 dbscan_exp executes a dbscan clustering experiment
 '''
 def dbscan_exp():
-    pass
+    cl.dbscan('./data/seeds.csv', 0.5, 5, 'seeds_dbscan')
+    cl.dbscan('./data/User_knowledge.csv', 0.2, 25, 'user_knowledge_dbscan')
+    cl.dbscan('./data/Sales_Transactions.csv', 1, 25, 'sales_transactions_dbscan')
+    cl.dbscan('movement_libras.csv', 0.5, 25, 'movement_libras_dbscan')
+    cl.dbscan('./data/Anuran calls.csv', 5, 500, 'anuran_calls_dbscan')
 
 '''
 kmeans_exp executes a kmeans clustering experiment
 '''
 def kmeans_exp():
-    pass
+    cl.kmeans('./data/seeds.csv', 5, 1000, 'seeds_kmeans')
 
 '''
 cnn_exp executes a competative neural network experiment
@@ -47,4 +51,6 @@ cnn_exp executes a competative neural network experiment
 def cnn_exp():
     pass
 
-qac_exp()
+# qac_exp()
+# dbscan_exp()
+# kmeans_exp()
